@@ -1,5 +1,5 @@
 import userService from '../services/userService';
-import connection from '../configs/database';
+import connection from '../config/database';
 
 const handleHomePage = (req, res) => {
     return res.render("home.ejs");

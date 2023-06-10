@@ -21,7 +21,7 @@ const createNewUser = async (email, password, username) => {
         Promise: bluebird
       });
     try {
-        const [rows, fields] = await connection.execute('INSERT INTO users (email, password, username) VALUES (?,?,?)',
+        const [rows, fields] = await connection.execute('INSERT INTO user (email, password, username) VALUES (?,?,?)',
               [email, hashPass, username]);
         return rows;
     }
@@ -41,7 +41,7 @@ const getUserList = async () => {
       });
       
     try {
-        const [rows, fields] = await connection.execute('SELECT * FROM users');
+        const [rows, fields] = await connection.execute('SELECT * FROM user');
         return rows;
     }
     catch (error) {
@@ -58,7 +58,7 @@ const deleteUser = async (id) => {
       });
       
     try {
-        const [rows, fields] = await connection.execute('DELETE FROM users WHERE id = ?',[id]);
+        const [rows, fields] = await connection.execute('DELETE FROM user WHERE id = ?',[id]);
         return rows;
     }
     catch (error) {
@@ -76,7 +76,7 @@ const getUserById = async (req, res) => {
       
     try {
  
-        const [rows, fields] = await connection.execute('SELECT * FROM users WHERE id = ?',[req.params.id]);
+        const [rows, fields] = await connection.execute('SELECT * FROM user WHERE id = ?',[req.params.id]);
         return rows;
     }
     catch (error) {
@@ -97,7 +97,7 @@ const updateUserInfo = async (req, res) => {
         let id = req.body.id;
         let email = req.body.email;
         let username = req.body.username;
-        const [rows, fields] = await connection.execute('UPDATE users SET email = ?, username = ? WHERE id = ?',[email, username, id] );
+        const [rows, fields] = await connection.execute('UPDATE user SET email = ?, username = ? WHERE id = ?',[email, username, id] );
         return rows;
     }
     catch (error) {

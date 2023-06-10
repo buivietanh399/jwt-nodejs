@@ -1,8 +1,8 @@
 require('dotenv').config();
 import express from 'express';
-import configViewEngine from './configs/viewEngine'; 
+import configViewEngine from './config/viewEngine'; 
 import initWebRoutes from './routes/web';
-import connection from './configs/database';
+import connection from './config/connectDB';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -17,6 +17,8 @@ configViewEngine(app);
 // Routes
 initWebRoutes(app);
 
+// test connection db
+connection();
 
 
 app.listen(port, () => {
