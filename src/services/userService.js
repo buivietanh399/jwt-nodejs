@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import mysql2 from 'mysql2/promise';
 import bluebird from 'bluebird';
+import db from '../models/index'
 // import connection from '../configs/database';
 
 
@@ -14,16 +15,13 @@ const hashUserPassword = (userPassword) => {
 const createNewUser = async (email, password, username) => {
     
     let hashPass = hashUserPassword(password);
-    const connection = await mysql2.createConnection( {
-        host:'localhost', 
-        user: 'root', 
-        database: 'jwt', 
-        Promise: bluebird
-      });
+ 
     try {
-        const [rows, fields] = await connection.execute('INSERT INTO user (email, password, username) VALUES (?,?,?)',
-              [email, hashPass, username]);
-        return rows;
+        await db.User.create({
+            username: username,
+            email: email,
+            password: hashPass
+        })
     }
     catch (error) {
         console.log(error);
@@ -33,51 +31,32 @@ const createNewUser = async (email, password, username) => {
 }
 
 const getUserList = async () => {
-    const connection = await mysql2.createConnection( {
-        host:'localhost', 
-        user: 'root', 
-        database: 'jwt', 
-        Promise: bluebird
-      });
       
     try {
-        const [rows, fields] = await connection.execute('SELECT * FROM user');
-        return rows;
+        
+        let users = [];
+        users = await  db.User.findAll();
+        return users;
     }
     catch (error) {
         console.log(error);
     }
 }
 
-const deleteUser = async (id) => {
-    const connection = await mysql2.createConnection( {
-        host:'localhost', 
-        user: 'root', 
-        database: 'jwt', 
-        Promise: bluebird
-      });
-      
-    try {
-        const [rows, fields] = await connection.execute('DELETE FROM user WHERE id = ?',[id]);
-        return rows;
-    }
-    catch (error) {
-        console.log(error);
-    }
-}
 
 const getUserById = async (req, res) => {
-    const connection = await mysql2.createConnection( {
-        host:'localhost', 
-        user: 'root', 
-        database: 'jwt', 
-        Promise: bluebird
-      });
-      
+    
     try {
- 
-        const [rows, fields] = await connection.execute('SELECT * FROM user WHERE id = ?',[req.params.id]);
-        return rows;
+        
+        let result = [];
+        result = await db.User.findOne({
+            where: {
+                id: req.params.id
+            }
+        })
+
+        return result.get({plain: true}); // chỉ lấy thông tin cần thiết (plaintext)
+      
     }
     catch (error) {
         console.log(error);
@@ -86,24 +65,43 @@ const getUserById = async (req, res) => {
 }
 
 const updateUserInfo = async (req, res) => {
-    const connection = await mysql2.createConnection( {
-        host:'localhost', 
-        user: 'root', 
-        database: 'jwt', 
-        Promise: bluebird
-      });
       
     try {
-        let id = req.body.id;
-        let email = req.body.email;
-        let username = req.body.username;
-        const [rows, fields] = await connection.execute('UPDATE user SET email = ?, username = ? WHERE id = ?',[email, username, id] );
-        return rows;
+        let result = await db.User.update(
+            {
+                email: req.body.email,
+                username: req.body.username        
+            } , 
+            {
+                where: 
+                    {
+                        id: req.body.id
+                    }
+            }
+           
+        ) 
     }
     catch (error) {
         console.log(error);
     }
 
+}
+
+const deleteUser = async (id) => {
+
+    try {
+        
+        let result = await db.User.destroy({
+            where: {
+                id: id
+            }
+        })
+
+        return result;
+    }
+    catch (error) {
+        console.log(error);
+    }
 }
 
 

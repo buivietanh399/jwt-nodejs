@@ -28,8 +28,8 @@ const handleDeleteUser = async (req,res) => {
 
 
 const getUpdateUserPage = async (req, res) => {
-    let rows = await userService.getUserById(req, res) ;
-    let userData = rows && rows.length >0 ? rows[0] : {};
+    let userData = await userService.getUserById(req, res) ;
+    
     return res.render("user-update.ejs", {userData});
 }
 
