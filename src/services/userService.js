@@ -31,7 +31,26 @@ const createNewUser = async (email, password, username) => {
 }
 
 const getUserList = async () => {
-      
+    
+    // let newUser = [];
+    // newUser = await db.User.findOne({
+    //     where: {id:1},
+    //     include: {model: db.Group},
+    //     raw: true,
+    //     nest: true
+    // });
+    
+    let roles = await db.Group.findAll({
+        where: {id:1},
+        attributes:["name", "description"],
+        include: {model: db.Role,  attributes:["url", "description"] },
+        raw: true,
+        nest: true
+    })
+
+    console.log(">>>Check new roles: ", roles);
+
+
     try {
         
         let users = [];
