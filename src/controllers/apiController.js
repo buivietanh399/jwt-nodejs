@@ -17,6 +17,14 @@ const handleRegister = async (req, res) => {
       });
     }
 
+    if (req.body.password && req.body.password.length < 3) {
+      return res.status(200).json({
+        EM: "Your password must have more than 3 letters",
+        EC: "-1",
+        DT: "",
+      });
+    }
+
     //service: create user
     let data = await loginRegisterService.registerNewUser(req.body);
 
@@ -37,7 +45,35 @@ const handleRegister = async (req, res) => {
   }
 };
 
+const handleLogin = async (req, res) => {
+  try {
+    if (!req.body.valueLogin || !req.body.password) {
+      return res.status(200).json({
+        EM: "Missing required",
+        EC: "-2",
+        DT: "", //date
+      });
+    }
+
+    let data = await loginRegisterService.handleUserLogin(req.body);
+
+    return res.status(200).json({
+      EM: data.EM,
+      EC: data.EC,
+      DT: data.DT,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      EM: "Something went wrong ... ",
+      EC: "-1",
+      DT: "",
+    });
+  }
+};
+
 module.exports = {
   testapi,
   handleRegister,
+  handleLogin,
 };
