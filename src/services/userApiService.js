@@ -1,4 +1,9 @@
 import db from "../models/index";
+import {
+  checkEmailExist,
+  checkPhoneExist,
+  hashUserPassword,
+} from "./loginRegisterService";
 
 const getAllUser = async () => {
   try {
@@ -37,8 +42,9 @@ const getUserWithPagination = async (page, limit) => {
     const { count, rows } = await db.User.findAndCountAll({
       offset: offset,
       limit: limit,
-      attributes: ["id", "username", "email", "phone", "sex"],
-      include: { model: db.Group, attributes: ["name", "description"] },
+      attributes: ["id", "username", "email", "phone", "sex", "address"],
+      include: { model: db.Group, attributes: ["name", "description", "id"] },
+      order: [["id", "DESC"]],
     });
 
     let totalPages = Math.ceil(count / limit);
@@ -60,7 +66,27 @@ const getUserWithPagination = async (page, limit) => {
 
 const createNewUser = async (data) => {
   try {
-    await db.User.create(data);
+    //check email exist
+    let isEmailExist = await checkEmailExist(data.email);
+    if (isEmailExist === true) {
+      return {
+        EM: "The email is already exist",
+        EC: 1,
+        DT: "email",
+      };
+    }
+
+    let isPhoneExist = await checkPhoneExist(data.phone);
+    if (isPhoneExist === true) {
+      return {
+        EM: "The phone number is already exist",
+        EC: 1,
+        DT: "phone",
+      };
+    }
+
+    let hashPassword = hashUserPassword(data.password);
+    await db.User.create({ ...data, password: hashPassword });
     return {
       EM: "create OK",
       EC: 0,
@@ -78,18 +104,45 @@ const createNewUser = async (data) => {
 
 const updateUser = async (data) => {
   try {
+    if (!data.groupId) {
+      return {
+        EM: "Error with emty GroupId",
+        EC: "1",
+        DT: "group",
+      };
+    }
     let user = await db.User.findOne({
       where: { id: data.id },
     });
 
     if (user) {
-      //update
-      user.save({});
+      await user.update({
+        username: data.username,
+        address: data.address,
+        sex: data.sex,
+        groupId: data.groupId,
+      });
+
+      return {
+        EM: "Update user succeeds",
+        EC: 0,
+        DT: "",
+      };
     } else {
-      //not found
+      //Not found
+      return {
+        EM: "User not found",
+        EC: 2,
+        DT: "",
+      };
     }
   } catch (error) {
     console.log(error);
+    return {
+      EM: "Something wrongs with server",
+      EC: 1,
+      DT: [],
+    };
   }
 };
 
