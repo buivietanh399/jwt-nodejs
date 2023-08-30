@@ -1,6 +1,9 @@
+require("dotenv").config();
 import db from "../models/index";
 import { Op } from "sequelize";
 import bcrypt from "bcryptjs";
+import { getGroupWithRoles } from "./JWTService";
+import { createJWT } from "../middleware/JWTAction";
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -76,13 +79,13 @@ const registerNewUser = async (rawUserData) => {
     let hassPassword = await hashUserPassword(rawUserData.password);
 
     //create new user
-    let newUser = await db.User.create({
+    await db.User.create({
       email: rawUserData.email,
       phone: rawUserData.phone,
       username: rawUserData.username,
       password: hassPassword,
+      groupId: 4,
     });
-    console.log(">> Check newUser: ", newUser);
 
     return {
       EM: "Create new user successfully",
@@ -109,26 +112,38 @@ const handleUserLogin = async (rawData) => {
       },
     });
 
-    console.log(">> Check user", user.get({ plain: true }));
+    //console.log(">> Check user", user.get({ plain: true }));
 
     if (user) {
       console.log(">>> Found user with email/phone");
       let isCorrectPassword = checkPassword(rawData.password, user.password);
       if (isCorrectPassword === true) {
+        let groupWithRoles = await getGroupWithRoles(user);
+
+        let payload = {
+          email: user.email,
+          groupWithRoles,
+          expiresIn: process.env.JWT_EXPIRES_IN,
+        };
+
+        let token = createJWT(payload);
         return {
           EM: "Oke",
           EC: 0,
-          DT: "",
+          DT: {
+            access_token: token,
+            groupWithRoles,
+          },
         };
       }
     }
 
-    console.log(
-      ">>> Input user with email/phone: ",
-      rawData.valueLogin,
-      "password: ",
-      rawData.password
-    );
+    // console.log(
+    //   ">>> Input user with email/phone: ",
+    //   rawData.valueLogin,
+    //   "password: ",
+    //   rawData.password
+    // );
     return {
       EM: "Your email/phone number or password is incorrect!",
       EC: 1,

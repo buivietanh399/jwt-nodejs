@@ -51,11 +51,18 @@ const handleLogin = async (req, res) => {
       return res.status(200).json({
         EM: "Missing required",
         EC: "-2",
-        DT: "", //date
+        DT: "", //data
       });
     }
 
     let data = await loginRegisterService.handleUserLogin(req.body);
+
+    //set cookie
+    //console.log(data.DT);
+    res.cookie("jwt", data.DT.access_token, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 1000,
+    });
 
     return res.status(200).json({
       EM: data.EM,
