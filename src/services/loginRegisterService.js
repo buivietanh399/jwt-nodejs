@@ -115,7 +115,7 @@ const handleUserLogin = async (rawData) => {
     //console.log(">> Check user", user.get({ plain: true }));
 
     if (user) {
-      console.log(">>> Found user with email/phone");
+      //console.log(">>> Found user with email/phone");
       let isCorrectPassword = checkPassword(rawData.password, user.password);
       if (isCorrectPassword === true) {
         let groupWithRoles = await getGroupWithRoles(user);
@@ -124,7 +124,6 @@ const handleUserLogin = async (rawData) => {
           email: user.email,
           groupWithRoles,
           username: user.username,
-          expiresIn: process.env.JWT_EXPIRES_IN,
         };
 
         let token = createJWT(payload);
